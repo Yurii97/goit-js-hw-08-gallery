@@ -68,25 +68,23 @@ const galleryItems = [
 const ref = {
   gallery: document.querySelector('.js-gallery'),
   modal: document.querySelector('.js-lightbox'),
-  closeModalBtn: document.querySelector('[data-action="close-lightbox"]')
+  closeModalBtn: document.querySelector('[data-action="close-lightbox"]'),
+  imgForModal: document.querySelector('.lightbox__image'),
 
 }
+const arreyLinkImages = [];
 
 // 1  Create Gallery
 const createMarkupGalerry = galleryItems.map(createOneImg).join('');
 ref.gallery.insertAdjacentHTML('beforeend', createMarkupGalerry)
 
-// // 2 Add Event Listener
+// // 2. Add Event Listener
 
-// open modal
 ref.gallery.addEventListener('click', openModal);
-
-// close modal
-ref.closeModalBtn.addEventListener('click', closeModal)
-
 // // Functions
 
-function createOneImg({preview, original, description}) {
+function createOneImg({ preview, original, description }) {
+  arreyLinkImages.push(original);
   return `
   <li class="gallery__item">
     <a class="gallery__link" href="">
@@ -105,15 +103,64 @@ function openModal(evt) {
   if (!evt.target.nodeName ==='IMG') {
     return;
   }
-  // console.log('ghjj');
-  // console.log(evt.target)
+  
   ref.modal.classList.add('is-open');
+  ref.imgForModal.src = evt.target.dataset.source;
+  ref.imgForModal.alt = evt.target.alt;
 
-  // !evt.target.classList.contains('gallery__image')
+    // close modal Listener
+  ref.modal.addEventListener('click', closeModalClick);  
+  document.addEventListener('keydown', closeModalEscKey);
+  document.addEventListener('keydown', changeCurentModalImg);
 }
 
-function closeModal() {
+function closeModal() {  
+  // remove Classlist
   ref.modal.classList.remove('is-open');
+  // remove Listener
+  ref.modal.removeEventListener('click', closeModalClick);
+  document.removeEventListener('keydown', closeModalEscKey);
+  document.removeEventListener('keydown', changeCurentModalImg);
+  // reset value
+  ref.imgForModal.src = '';
+  ref.imgForModal.alt = '';
 }
 
+function closeModalClick(evt) {
+  const curentClickToClose = evt.target.classList.contains('lightbox__image')
+  if (curentClickToClose) {
+    return;
+  }
+  closeModal()
+}
 
+function closeModalEscKey(e) {
+  if (e.key === 'Escape') {
+    closeModal();
+  }  
+}
+
+function changeCurentModalImg(evt) {
+  const currentIndex = arreyLinkImages.indexOf(ref.imgForModal.src);
+  if (evt.key === 'ArrowRight') {
+    rightClick(currentIndex)
+  } else if (evt.key === 'ArrowLeft') {
+    leftClick(currentIndex)
+  }
+}
+
+function rightClick(currentIndex) {
+  let nextIndex = currentIndex + 1;
+  if (nextIndex === arreyLinkImages.length) {
+    nextIndex = 0
+  }
+  ref.imgForModal.src = arreyLinkImages[nextIndex];
+}
+
+function leftClick(currentIndex) {
+  let nextIndex = currentIndex - 1;
+  if (nextIndex === -1) {
+    nextIndex = arreyLinkImages.length - 1;
+  }
+  ref.imgForModal.src = arreyLinkImages[nextIndex];
+}
